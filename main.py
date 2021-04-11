@@ -1,36 +1,43 @@
 """ Sumo win-lose web scraper """
 
+# Standard libraries.
 import csv
-from selenium import webdriver
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import filedialog
+
+# Third Party libraries.
+from selenium import webdriver
 
 
 class MainApplication:
-    """ Application class """
+    """ GUI class """
 
     def __init__(self, master):
+        """ GUI construction """
         self.master = master
         master.title('Sumo Scraper and Plotter')
         master.protocol('WM_DELETE_WINDOW', self.window_close)
 
+        # Creates instance of Scraper class.
         self.scrape = Scraper()
 
-        self.bg_color = 'lightsteelblue2'
-        self.button_font = ('helvetica', 12, 'bold')
+        # Styling variables.
+        bg_color = 'lightsteelblue2'
+        button_font = ('helvetica', 12, 'bold')
 
-        # Canvas
-        self.main_canvas = tk.Canvas(master, width=450, height=450, bg=self.bg_color, relief='raised')
+        # Canvas.
+        self.main_canvas = tk.Canvas(master, width=450, height=450, bg=bg_color, relief='raised')
         self.main_canvas.pack()
 
-        # Header label
-        self.app_name_label = tk.Label(master, text='Sumo Plotter', bg=self.bg_color)
+        # Header label.
+        self.app_name_label = tk.Label(master, text='Sumo Plotter', bg=bg_color)
         self.app_name_label.config(font=('helvetica', 20))
         self.main_canvas.create_window(235, 40, window=self.app_name_label)
 
-        # Web scrape button
+        # Web scrape button.
         self.web_scrape_button = tk.Button(text='Get Sumo Stats', command=self.scrape.scraper,
-                                           bg='green', fg='white', font=self.button_font)
+                                           bg='green', fg='white', font=button_font)
         self.main_canvas.create_window(125, 140, window=self.web_scrape_button)
 
     def window_close(self):
@@ -73,6 +80,8 @@ class Scraper:
             self.results_list.append(self.win_lose_retrieval(driver, rikishi_dict.get(name)))
             driver.back()
 
+        print('Finished scraping')
+
         data_dictionary = self.data_dictionary_creation()
         self.create_csv_file(data_dictionary)
 
@@ -94,7 +103,7 @@ class Scraper:
                 if element.get_attribute('href') == basho_href:
                     results.append(element.get_attribute('innerHTML'))
 
-        # Return all results.
+        # Return all results as a nested list.
         return results
 
     def data_dictionary_creation(self):
@@ -111,7 +120,7 @@ class Scraper:
                 results_dict[name] = {}
                 for date in self.basho_list:
                     # Add key ( Basho Date ) and value ( Results ) pairs to each nested dictionary.
-                    # Example: { RikishiName { Basho Date : Results }
+                    # Example: { 'Hakuho': { '202103' : '2-1-12' }}.
                     results_dict[name][date] = self.results_list[list_index][result_index]
                     # Increase indexing of nested list by 1.
                     result_index += 1
@@ -126,7 +135,9 @@ class Scraper:
         for date in self.basho_list:
             csv_fields.append(date)
 
-        with open('Sumo_Basho_Results.csv', 'w', newline='') as file:
+        # Allows user to designate file name and location.
+        file_path = filedialog.asksaveasfilename(defaultextension='csv')
+        with open(file_path, 'w', newline='') as file:
             writer = csv.DictWriter(file, csv_fields)
             writer.writeheader()
             for k in data_dictionary:
@@ -134,6 +145,7 @@ class Scraper:
 
 
 def main():
+    """ Application loop function """
     root = tk.Tk()
     MainApplication(root)
     root.mainloop()
