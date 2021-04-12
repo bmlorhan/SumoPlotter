@@ -21,6 +21,7 @@ class MainApplication:
 
         # Creates instance of Scraper class.
         self.scrape = Scraper()
+        self.file_path = None
 
         # Styling variables.
         bg_color = 'lightsteelblue2'
@@ -35,10 +36,25 @@ class MainApplication:
         self.app_name_label.config(font=('helvetica', 20))
         self.main_canvas.create_window(235, 40, window=self.app_name_label)
 
-        # Web scrape button.
-        self.web_scrape_button = tk.Button(text='Get Sumo Stats', command=self.scrape.scraper,
+        # Web scrape button. Returns file path of created CSV
+        self.web_scrape_button = tk.Button(text='Get Sumo Stats', command=self.scrape.web_scraper,
                                            bg='green', fg='white', font=button_font)
         self.main_canvas.create_window(125, 140, window=self.web_scrape_button)
+
+        # Import CSV file button
+        self.import_csv_button = tk.Button(text='Import CSV File', command=self.import_csv_file,
+                                           bg='green', fg='white', font=button_font)
+        self.main_canvas.create_window(125, 210, window=self.import_csv_button)
+
+    def run_web_scraper(self):
+        """ Runs scraper and returns the CSV file path """
+        self.file_path = self.scrape.web_scraper()
+        return self.file_path
+
+    def import_csv_file(self):
+        """ User can import their own CSV file """
+        self.file_path = filedialog.askopenfilename()
+        return self.file_path
 
     def window_close(self):
         """ Window closes confirmation """
@@ -54,8 +70,9 @@ class Scraper:
         self.registry_number_list = []
         self.basho_list = ['202009', '202011', '202101', '202103']
         self.results_list = []
+        self.csv_file_path = self.create_csv_file
 
-    def scraper(self):
+    def web_scraper(self):
         """ Retrieve list of Rikishi in the Makuuchi Banzuke who participated in the latest Basho"""
         webpage = r'http://sumodb.sumogames.de/Default.aspx'
         driver = webdriver.Firefox()
@@ -83,9 +100,10 @@ class Scraper:
         print('Finished scraping')
 
         data_dictionary = self.data_dictionary_creation()
-        self.create_csv_file(data_dictionary)
+        self.csv_file_path = self.create_csv_file(data_dictionary)
 
         driver.quit()
+        return self.csv_file_path
 
     def win_lose_retrieval(self, driver, registry_number):
         """ Scrape the Wins and Loses for each Rikishi """
@@ -142,6 +160,8 @@ class Scraper:
             writer.writeheader()
             for k in data_dictionary:
                 writer.writerow({field: data_dictionary[k].get(field) or k for field in csv_fields})
+
+        return file_path
 
 
 def main():
