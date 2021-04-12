@@ -70,7 +70,6 @@ class Scraper:
         self.registry_number_list = []
         self.basho_list = ['202009', '202011', '202101', '202103']
         self.results_list = []
-        self.csv_file_path = self.create_csv_file
 
     def web_scraper(self):
         """ Retrieve list of Rikishi in the Makuuchi Banzuke who participated in the latest Basho"""
@@ -100,10 +99,10 @@ class Scraper:
         print('Finished scraping')
 
         data_dictionary = self.data_dictionary_creation()
-        self.csv_file_path = self.create_csv_file(data_dictionary)
+        csv_file_path = self.create_csv_file(data_dictionary)
 
         driver.quit()
-        return self.csv_file_path
+        return csv_file_path
 
     def win_lose_retrieval(self, driver, registry_number):
         """ Scrape the Wins and Loses for each Rikishi """
