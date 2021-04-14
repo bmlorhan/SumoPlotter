@@ -37,7 +37,7 @@ class MainApplication:
         self.main_canvas.create_window(235, 40, window=self.app_name_label)
 
         # Web scrape button. Returns file path of created CSV
-        self.web_scrape_button = tk.Button(text='Get Sumo Stats', command=self.scrape.web_scraper,
+        self.web_scrape_button = tk.Button(text='Get Sumo Stats', command=self.run_web_scraper,
                                            bg='green', fg='white', font=button_font)
         self.main_canvas.create_window(125, 140, window=self.web_scrape_button)
 
@@ -48,12 +48,26 @@ class MainApplication:
 
     def run_web_scraper(self):
         """ Runs scraper and returns the CSV file path """
-        self.file_path = self.scrape.web_scraper()
+        # Check to see if a file has already been loaded and ask to replace it or not.
+        if self.file_path is not None:
+            if messagebox.askokcancel('File already loaded',
+                                      'File: {} already loaded. Do you want to replace it?'.format(self.file_path)):
+                self.file_path = self.scrape.web_scraper()
+        else:
+            self.file_path = self.scrape.web_scraper()
+
         return self.file_path
 
     def import_csv_file(self):
-        """ User can import their own CSV file """
-        self.file_path = filedialog.askopenfilename()
+        """ User can import their own CSV file, returns the CSV file path"""
+        # Check to see if a file has already been loaded and ask to replace it or not.
+        if self.file_path is not None:
+            if messagebox.askokcancel('File already loaded',
+                                      'File: {} already loaded. Do you want to replace it?'.format(self.file_path)):
+                self.file_path = filedialog.askopenfilename()
+        else:
+            self.file_path = filedialog.askopenfilename()
+
         return self.file_path
 
     def window_close(self):
