@@ -86,8 +86,7 @@ class Scraper:
         self.results_list = []
 
     def web_scraper(self):
-        """ Retrieve list of Rikishi in the Makuuchi Banzuke who participated in the latest Basho
-            1/11/22 - Currently does not grab Rikishi making their debut in Makuuchi"""
+        """ Retrieve list of Rikishi in the Makuuchi Banzuke who participated in the latest Basho"""
 
         webpage = r'http://sumodb.sumogames.de/Default.aspx'
         driver = webdriver.Firefox()
