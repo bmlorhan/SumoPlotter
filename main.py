@@ -82,22 +82,26 @@ class Scraper:
     def __init__(self):
         self.rikishi_name_list = []
         self.registry_number_list = []
-        self.basho_list = ['202009', '202011', '202101', '202103']
+        self.basho_list = ['202201']
         self.results_list = []
 
     def web_scraper(self):
-        """ Retrieve list of Rikishi in the Makuuchi Banzuke who participated in the latest Basho"""
+        """ Retrieve list of Rikishi in the Makuuchi Banzuke who participated in the latest Basho
+            1/11/22 - Currently does not grab Rikishi making their debut in Makuuchi"""
+
         webpage = r'http://sumodb.sumogames.de/Default.aspx'
         driver = webdriver.Firefox()
         driver.get(webpage)
 
         # Finds link to Rikishi Profile.
-        rikishi = driver.find_elements_by_css_selector('td.shikona>a')
-        for element in rikishi:
-            self.rikishi_name_list.append(element.get_attribute('innerHTML'))
-            # Separate the registry number from the rest of the url.
-            url, r_number = element.get_attribute('href').split('=')
-            self.registry_number_list.append(r_number)
+        class_names = ['shikona', 'debut']
+        for class_name in class_names:
+            rikishi = driver.find_elements_by_css_selector('td.{}>a'.format(class_name))
+            for element in rikishi:
+                self.rikishi_name_list.append(element.get_attribute('innerHTML'))
+                # Separate the registry number from the rest of the url.
+                url, r_number = element.get_attribute('href').split('=')
+                self.registry_number_list.append(r_number)
 
         # Dict for Rikishi name and respective registry number.
         rikishi_dict = dict(zip(self.rikishi_name_list, self.registry_number_list))
@@ -126,13 +130,15 @@ class Scraper:
             # Loops through each Basho date.
             for date in self.basho_list:
                 # Used to compare to hrefs in the html
-                # so that we get ones we want based on registry and basho.
+                # so that we get ones we want based on registry and basho date.
                 basho_href = r'http://sumodb.sumogames.de/Rikishi_basho.aspx?r={}&b={}'\
                             .format(registry_number, date)
 
                 # If the href matches, get the innerHTML ( our results ) and append to results list.
                 if element.get_attribute('href') == basho_href:
-                    results.append(element.get_attribute('innerHTML'))
+                    raw_results = (element.get_attribute('innerHTML').split('-'))
+                    results.append(raw_results[0])
+
 
         # Return all results as a nested list.
         return results
@@ -162,7 +168,7 @@ class Scraper:
 
     def create_csv_file(self, data_dictionary):
         """ Creates a CSV file using the data in data_dictionary """
-        csv_fields = ['name']
+        csv_fields = ['Name']
         for date in self.basho_list:
             csv_fields.append(date)
 
